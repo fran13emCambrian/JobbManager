@@ -55,7 +55,25 @@ namespace JobManager.ViewModels
             }
         }
 
-       
+        public JobDetailViewModel()
+        {
+            SaveCommand = new AsyncCommand(Save);
+            TakePictureCommand = new AsyncCommand(TakePicture);
+        }
+
+        async Task TakePicture()
+        {
+            var service = DependencyService.Get<IMediaService>();
+            var bytes = await service.CapturePhotoAsync();
+
+            Picture = ImageSource.FromStream(() => new MemoryStream(bytes));
+            
+            string name = $"Jobs/Pictures/{JobId}/{Guid.NewGuid()}.png";
+
+            var blob = DependencyService.Get<IBlobStorageService>();
+            await blob.UploadStreamAsync(name, new MemoryStream(bytes));
+        }
+
 
         async Task Save()
         {
